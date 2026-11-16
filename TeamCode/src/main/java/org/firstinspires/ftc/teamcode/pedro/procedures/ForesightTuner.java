@@ -872,6 +872,10 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
     public double IDLE_SECONDS = 1;
 
     private final ElapsedTime timer = new ElapsedTime();
+    // ITKAN patch: the drive step had no time limit, and the robot once kept strafing
+    // past the target. After DRIVE_TIMEOUT seconds it brakes anyway, wherever it is.
+    private final ElapsedTime driveTimer = new ElapsedTime();
+    public double DRIVE_TIMEOUT = 3.0;
     private final List<double[]> velocityToBrakingDistance = new ArrayList<>();
     private State state = State.DRIVE;
     private int iteration = 0;
@@ -908,6 +912,7 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
         localizer.setPose(Pose.zero());
         localizer.update();
         timer.reset();
+        driveTimer.reset();
 
         drivetrain.drive(new DrivePowers(0,maxPower,0), false);
 
@@ -920,8 +925,15 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
 
             switch (state) {
                 case DRIVE: {
+                    // ITKAN patch: show what the tuner sees on the Driver Hub.
+                    telemetry.addData("Strafe braking trial", (iteration + 1) + " of " + POWERS.length);
+                    telemetry.addData("Direction", direction > 0 ? "left" : "right");
+                    telemetry.addData("y (in)", localizer.pose().y());
+                    telemetry.addData("Drive time (s)", driveTimer.seconds());
+                    telemetry.update();
                     if ((direction > 0 && Math.abs(localizer.pose().y()) > distance) ||
-                            (direction < 0 && Math.abs(localizer.pose().y()) <= 6)) {
+                            (direction < 0 && Math.abs(localizer.pose().y()) <= 6) ||
+                            driveTimer.seconds() > DRIVE_TIMEOUT) {
                         startPosition = localizer.pose().toVector2D();
                         measuredVelocity = localizer.velocity().toVector2D().magnitude();
 
@@ -944,7 +956,10 @@ class StrafeBraking extends TuningOpMode<List<Double>> {
                 }
                 case WAIT: {
                     drivetrain.stop();
-                    if (timer.seconds() > IDLE_SECONDS) state = State.DRIVE;
+                    if (timer.seconds() > IDLE_SECONDS) {
+                        state = State.DRIVE;
+                        driveTimer.reset();
+                    }
                     break;
                 }
                 case DONE: {}
