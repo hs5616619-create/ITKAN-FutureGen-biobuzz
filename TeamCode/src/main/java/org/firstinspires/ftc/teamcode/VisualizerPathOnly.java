@@ -18,6 +18,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.pedro.Constants;   // ADDED: the export forgets this import
 // TODO 1 (imports): add imports for DcMotor, DcMotorSimple, Servo and ElapsedTime
 //        (all in com.qualcomm.robotcore...), plus: import static com.pedropathing.ivy.groups.Groups.race;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import static com.pedropathing.ivy.groups.Groups.race;
 
 // this is exactly the code pedro visualizer exported (only added imports + changed class name)
 //
